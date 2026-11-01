@@ -1,0 +1,4 @@
+[submodule "vendor/kira"]
+	path = vendor/kira
+	url = https://github.com/exoad/kira.git
+	branch = syntax-status
