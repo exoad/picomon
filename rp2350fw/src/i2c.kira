@@ -1,0 +1,24 @@
+rp2350.fw.gpio as gpio
+
+// An I2C instance as controller: 0 is i2c0, 1 is i2c1. Transfers go a byte at a time; a multi-byte write is a loop of writeByte.
+
+@_extern(cpp = "rp2350::shim::i2cBegin", header = "rp2350/shim.hxx") rawBegin: (n: Int32, baud: UInt32) UInt32
+@_extern(cpp = "rp2350::shim::i2cWriteByte", header = "rp2350/shim.hxx") rawWriteByte: (n: Int32, address: Int32, b: UInt8, nostop: Bool) Int32
+@_extern(cpp = "rp2350::shim::i2cReadByte", header = "rp2350/shim.hxx") rawReadByte: (n: Int32, address: Int32, nostop: Bool) Int32
+
+// Starts the instance at baud on the given SDA and SCL GPIOs; the baud it got back.
+pub begin: (n: Int32, baud: Int64, sda: Int32, scl: Int32) Int64 {
+    gpio.setFunction(sda, gpio.FUNC_I2C)
+    gpio.setFunction(scl, gpio.FUNC_I2C)
+    rawBegin(n, baud as UInt32) as Int64
+}
+
+// Writes one byte to the 7-bit address: the bytes written, or a negative error. nostop keeps the bus for the next byte.
+pub writeByte: (n: Int32, address: Int32, b: UInt8, nostop: Bool) Int32 {
+    rawWriteByte(n, address, b, nostop)
+}
+
+// Reads one byte from the 7-bit address; -1 on error.
+pub readByte: (n: Int32, address: Int32, nostop: Bool) Int32 {
+    rawReadByte(n, address, nostop)
+}

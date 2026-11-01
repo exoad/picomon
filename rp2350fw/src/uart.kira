@@ -1,0 +1,28 @@
+rp2350.fw.gpio as gpio
+
+// A hardware UART: instance 0 is uart0, 1 is uart1. Its pins are GPIO numbers.
+
+@_extern(cpp = "rp2350::shim::uartBegin", header = "rp2350/shim.hxx") rawBegin: (n: Int32, baud: UInt32) UInt32
+@_extern(cpp = "rp2350::shim::uartPutByte", header = "rp2350/shim.hxx") rawPutByte: (n: Int32, b: UInt8) Void
+@_extern(cpp = "rp2350::shim::uartReadable", header = "rp2350/shim.hxx") rawReadable: (n: Int32) Bool
+@_extern(cpp = "rp2350::shim::uartGetByte", header = "rp2350/shim.hxx") rawGetByte: (n: Int32) UInt8
+
+// Starts the instance at baud, 8N1, on the given receive and transmit GPIOs; the baud it got back.
+pub begin: (n: Int32, baud: Int64, rx: Int32, tx: Int32) Int64 {
+    gpio.setFunction(rx, gpio.FUNC_UART)
+    gpio.setFunction(tx, gpio.FUNC_UART)
+    rawBegin(n, baud as UInt32) as Int64
+}
+
+pub putByte: (n: Int32, b: UInt8) Void {
+    rawPutByte(n, b)
+}
+
+pub readable: (n: Int32) Bool {
+    rawReadable(n)
+}
+
+// The next byte; waits for one when none is readable, so check readable first.
+pub getByte: (n: Int32) UInt8 {
+    rawGetByte(n)
+}

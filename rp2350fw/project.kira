@@ -1,0 +1,9 @@
+// The firmware half of the rp2350 library: what only the board can do, imported as rp2350.fw.<module>.
+// It declares C++ externs, so a program that targets py cannot depend on it; rp2350 is the half that can.
+PROJECT: Project { } with {
+    name = "rp2350.fw"
+    srcDir = "src"
+    target = "cpp"
+    types = "strict"
+    dependencies = @mapOf("kira_stdlib", "vendor/kira/kira")
+}

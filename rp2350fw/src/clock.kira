@@ -1,0 +1,12 @@
+// Microseconds since boot, and sleeping.
+
+@_extern(cpp = "time_us_64", header = "hardware/timer.h") rawMicros: () UInt64
+@_extern(cpp = "sleep_ms", header = "pico/time.h") rawSleepMs: (ms: UInt32) Void
+
+pub micros: () Int64 {
+    rawMicros() as Int64
+}
+
+pub sleepMs: (ms: Int32) Void {
+    rawSleepMs(ms as UInt32)
+}

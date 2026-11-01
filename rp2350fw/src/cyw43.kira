@@ -1,0 +1,15 @@
+// The wireless chip of a Pico 2 W. Its LED is on the chip, so the LED is lit through the chip's driver. The shim
+// calls the driver only on a board that has the chip; on any other board these do nothing.
+
+@_extern(cpp = "rp2350::shim::cyw43Init", header = "rp2350/shim.hxx") rawInit: () Bool
+@_extern(cpp = "rp2350::shim::cyw43WriteLed", header = "rp2350/shim.hxx") rawWriteLed: (high: Bool) Void
+
+// Starts the chip; whether it started.
+pub init: () Bool {
+    rawInit()
+}
+
+// Sets the chip's LED.
+pub writeLed: (high: Bool) Void {
+    rawWriteLed(high)
+}

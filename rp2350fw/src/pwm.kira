@@ -1,0 +1,34 @@
+rp2350.fw.gpio as gpio
+
+// PWM: a slice has a counter that wraps at its wrap value, and two channels whose levels set the duty.
+
+@_extern(cpp = "pwm_gpio_to_slice_num", header = "hardware/pwm.h") rawSlice: (pin: UInt32) UInt32
+@_extern(cpp = "pwm_gpio_to_channel", header = "hardware/pwm.h") rawChannel: (pin: UInt32) UInt32
+@_extern(cpp = "pwm_set_wrap", header = "hardware/pwm.h") rawWrap: (slice: UInt32, wrap: UInt16) Void
+@_extern(cpp = "pwm_set_chan_level", header = "hardware/pwm.h") rawLevel: (slice: UInt32, chan: UInt32, level: UInt16) Void
+@_extern(cpp = "pwm_set_enabled", header = "hardware/pwm.h") rawEnabled: (slice: UInt32, enabled: Bool) Void
+
+pub slice: (pin: Int32) Int32 {
+    rawSlice(pin as UInt32) as Int32
+}
+
+pub channel: (pin: Int32) Int32 {
+    rawChannel(pin as UInt32) as Int32
+}
+
+// Gives the pin to its PWM slice.
+pub attach: (pin: Int32) Void {
+    gpio.setFunction(pin, gpio.FUNC_PWM)
+}
+
+pub setWrap: (slice: Int32, wrap: Int32) Void {
+    rawWrap(slice as UInt32, wrap as UInt16)
+}
+
+pub setLevel: (slice: Int32, chan: Int32, level: Int32) Void {
+    rawLevel(slice as UInt32, chan as UInt32, level as UInt16)
+}
+
+pub enable: (slice: Int32, enabled: Bool) Void {
+    rawEnabled(slice as UInt32, enabled)
+}

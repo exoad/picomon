@@ -1,0 +1,43 @@
+// Digital pins through the SDK. A pin is its GPIO number.
+
+@_extern(cpp = "gpio_init", header = "hardware/gpio.h") rawInit: (pin: UInt32) Void
+@_extern(cpp = "gpio_set_dir", header = "hardware/gpio.h") rawDir: (pin: UInt32, out: Bool) Void
+@_extern(cpp = "gpio_put", header = "hardware/gpio.h") rawPut: (pin: UInt32, high: Bool) Void
+@_extern(cpp = "gpio_get", header = "hardware/gpio.h") rawGet: (pin: UInt32) Bool
+@_extern(cpp = "gpio_set_pulls", header = "hardware/gpio.h") rawPulls: (pin: UInt32, up: Bool, down: Bool) Void
+@_extern(cpp = "rp2350::shim::setFunction", header = "rp2350/shim.hxx") rawFunction: (pin: UInt32, fn: Int32) Void
+
+pub @_extern(cpp = "rp2350::shim::FUNC_SIO", header = "rp2350/shim.hxx") FUNC_SIO: Int32
+pub @_extern(cpp = "rp2350::shim::FUNC_UART", header = "rp2350/shim.hxx") FUNC_UART: Int32
+pub @_extern(cpp = "rp2350::shim::FUNC_I2C", header = "rp2350/shim.hxx") FUNC_I2C: Int32
+pub @_extern(cpp = "rp2350::shim::FUNC_PWM", header = "rp2350/shim.hxx") FUNC_PWM: Int32
+
+// Makes the pin a plain GPIO, as an input.
+pub init: (pin: Int32) Void {
+    rawInit(pin as UInt32)
+}
+
+pub setOutput: (pin: Int32) Void {
+    rawDir(pin as UInt32, true)
+}
+
+pub setInput: (pin: Int32) Void {
+    rawDir(pin as UInt32, false)
+}
+
+pub write: (pin: Int32, high: Bool) Void {
+    rawPut(pin as UInt32, high)
+}
+
+pub read: (pin: Int32) Bool {
+    rawGet(pin as UInt32)
+}
+
+pub pulls: (pin: Int32, up: Bool, down: Bool) Void {
+    rawPulls(pin as UInt32, up, down)
+}
+
+// Gives the pin to a peripheral: fn is one of the FUNC_ constants.
+pub setFunction: (pin: Int32, fn: Int32) Void {
+    rawFunction(pin as UInt32, fn)
+}

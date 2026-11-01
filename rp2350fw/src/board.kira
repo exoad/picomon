@@ -1,0 +1,3 @@
+// The board this build is for: PICOMON_BOARD, an index into rp2350.board.PROFILES, set by the PlatformIO env.
+
+pub @_extern(cpp = "PICOMON_BOARD", header = "rp2350/shim.hxx") BOARD_INDEX: Int32

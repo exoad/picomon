@@ -1,0 +1,29 @@
+// The 12-bit ADC: GP26 to GP29 are inputs 0 to 3, and input 4 is the temperature sensor.
+
+@_extern(cpp = "adc_init", header = "hardware/adc.h") rawInit: () Void
+@_extern(cpp = "adc_gpio_init", header = "hardware/adc.h") rawGpioInit: (pin: UInt32) Void
+@_extern(cpp = "adc_select_input", header = "hardware/adc.h") rawSelect: (input: UInt32) Void
+@_extern(cpp = "adc_read", header = "hardware/adc.h") rawRead: () UInt16
+@_extern(cpp = "adc_set_temp_sensor_enabled", header = "hardware/adc.h") rawTempSensor: (enable: Bool) Void
+
+pub init: () Void {
+    rawInit()
+}
+
+// Puts the pin in ADC mode.
+pub initPin: (pin: Int32) Void {
+    rawGpioInit(pin as UInt32)
+}
+
+pub select: (input: Int32) Void {
+    rawSelect(input as UInt32)
+}
+
+// The last conversion, 0 to 4095.
+pub read: () Int32 {
+    rawRead() as Int32
+}
+
+pub tempSensor: (enable: Bool) Void {
+    rawTempSensor(enable)
+}
