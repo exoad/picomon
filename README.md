@@ -11,7 +11,7 @@
 ## Layout
 
 - `rp2350/`: target-neutral modules (pins, ADC, PWM duty, I2C addresses, a ticker, the board profiles), with host tests in `tests/`.
-- `rp2350fw/`: firmware-only bindings to the Pico SDK (`@_extern`, drift-checked against the SDK headers), plus `include/rp2350/shim.hxx`.
+- `rp2350fw/`: firmware-only bindings to the Pico SDK and arduino-pico (`@_extern`, drift-checked against the SDK headers), with no hand-written C++: pins, PWM, UART and I2C go through arduino-pico (pinMode, digitalWrite, analogWrite, Serial1/2, Wire/Wire1).
 - `src/app.kira`: the smoke firmware, which blinks the board's LED.
 - `tests/`: host tests and the mutation runner, all in Kira.
 
@@ -28,7 +28,7 @@
 ## Toolchain
 
 - PlatformIO in `.venv` (`pip install platformio`). The platform is `maxgerhardt/platform-raspberrypi` pinned to `5d4561a0`, which provides the `rpipico2` and `rpipico2w` boards and the earlephilhower arduino-pico framework.
-- Kira compiler: `vendor/kira` (submodule, `exoad/kira` at `f0bb5a39`).
+- Kira compiler: `vendor/kira` (submodule, `exoad/kira` at `e73b7f07`).
 
 ## Build and test
 

@@ -10,7 +10,6 @@ rp2350.timing.Ticker as Ticker
 rp2350.fw.board.BOARD_INDEX as BOARD_INDEX
 rp2350.fw.clock as clock
 rp2350.fw.gpio as gpio
-rp2350.fw.cyw43 as cyw43
 rp2350.fw.uart as uart
 rp2350.fw.i2c as i2c
 rp2350.fw.pwm as pwm
@@ -19,7 +18,6 @@ rp2350.fw.adc as adc
 HALF_PERIOD_US: Int64 = 500000
 
 refused: Mutable<Bool> = false
-wireless: Mutable<Bool> = false
 ledPin: Mutable<Int32> = -1
 lit: Mutable<Bool> = false
 ticker: Mutable<Ticker> { HALF_PERIOD_US }
@@ -28,13 +26,10 @@ pub setup: () Void {
     board: Board = boardAt(BOARD_INDEX)
     route: Int32 = ledRoute(board)
     refused = route == LED_NONE
-    wireless = route == LED_WIRELESS
-    if wireless {
-        cyw43.init()
-    } else if !refused {
-        ledPin = board.ledPin
-        gpio.init(ledPin)
-        gpio.setOutput(ledPin)
+    if !refused {
+        // On a Pico 2 W, arduino-pico routes its LED pin through the wireless chip.
+        ledPin = route == LED_WIRELESS ? gpio.LED_PIN as Int32 : board.ledPin
+        gpio.mode(ledPin, gpio.MODE_OUTPUT)
     }
 }
 
@@ -44,11 +39,7 @@ pub loop: () Void {
     } else {
         if ticker.due(clock.micros()) {
             lit = !lit
-            if wireless {
-                cyw43.writeLed(lit)
-            } else {
-                gpio.write(ledPin, lit)
-            }
+            gpio.write(ledPin, lit)
         }
         clock.sleepMs(1)
     }

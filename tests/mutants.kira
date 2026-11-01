@@ -36,10 +36,12 @@ MUTANTS: List<Mutant> = @listOf(
     Mutant { "rp2350/src/board.kira", "profileAt(index).unwrapOr(NO_BOARD)", "profileAt(index).unwrapOr(PROFILES[0])", "host", "a missing index falls back to the Pico 2" },
     Mutant { "rp2350fw/src/clock.kira", "rawMicros: () UInt64", "rawMicros: () Int64", "drift", "time_us_64 is bound as signed" },
     Mutant { "rp2350fw/src/adc.kira", "rawRead: () UInt16", "rawRead: () UInt32", "drift", "adc_read is bound as 32 bits" },
-    Mutant { "rp2350fw/src/gpio.kira", "gpio_set_dir\", header", "gpio_set_direction\", header", "drift", "gpio_set_dir is renamed in the binding" },
-    Mutant { "rp2350fw/src/pwm.kira", "rawSlice: (pin: UInt32) UInt32", "rawSlice: (pin: UInt32) Int32", "drift", "pwm_gpio_to_slice_num is bound as signed" },
-    Mutant { "rp2350fw/include/rp2350/shim.hxx", "inline std::uint32_t uartBegin", "inline std::int32_t uartBegin", "drift", "the shim's uartBegin returns a signed value" },
-    Mutant { "rp2350fw/include/rp2350/shim.hxx", "inline std::uint8_t uartGetByte", "inline std::uint16_t uartGetByte", "drift", "the shim's uartGetByte returns 16 bits" }
+    Mutant { "rp2350fw/src/gpio.kira", "gpio_put\", header", "gpio_put_level\", header", "drift", "gpio_put is renamed in the binding" },
+    Mutant { "rp2350fw/src/gpio.kira", "LED_PIN: UInt32", "LED_PIN: Int32", "drift", "PIN_LED is bound as signed" },
+    Mutant { "rp2350fw/src/gpio.kira", "pinMode\", header", "pinModes\", header", "drift", "pinMode is renamed in the binding" },
+    Mutant { "rp2350fw/src/pwm.kira", "analogWriteRange\", header", "analogWriteRanges\", header", "drift", "analogWriteRange is renamed in the binding" },
+    Mutant { "rp2350fw/src/uart.kira", "write: (b: UInt8) Size", "write: (b: UInt8) Int32", "drift", "SerialUART.write is bound as returning Int32" },
+    Mutant { "rp2350fw/src/i2c.kira", "endTransmission: (stop: Bool) UInt8", "endTransmission: (stop: Bool) UInt16", "drift", "TwoWire.endTransmission is bound as 16 bits" }
 )
 
 runProgram: (argv: List<Str>) Int32 {
