@@ -1,0 +1,23 @@
+// The chip itself, through arduino-pico's rp2040 object: its unique ID, rebooting, and rebooting into the USB
+// bootloader (the BOOTSEL drive).
+
+@_opaque @_extern(cpp = "RP2040", header = "Arduino.h") RawChip: Mutable<Any> {
+    pub @_mutates @_extern(cpp = "getChipID") chipId: () Str
+    pub @_mutates @_extern(cpp = "reboot") reboot: () Void
+    pub @_mutates @_extern(cpp = "rebootToBootloader") rebootToBootloader: () Void
+}
+
+@_extern(cpp = "&rp2040", header = "Arduino.h") CHIP: RawChip
+
+// The board's unique ID as hex text (the SDK's pico_get_unique_board_id).
+pub uniqueId: () Str {
+    CHIP.chipId()
+}
+
+pub reboot: () Void {
+    CHIP.reboot()
+}
+
+pub rebootToBootloader: () Void {
+    CHIP.rebootToBootloader()
+}

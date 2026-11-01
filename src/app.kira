@@ -1,5 +1,6 @@
-// The smoke firmware: blinks the LED of the board named by PICOMON_BOARD twice a second. A board with no profile,
-// or whose LED the library cannot drive, is refused: the program never drives an LED it does not have.
+// The smoke firmware: blinks the LED of the board named by PICOMON_BOARD twice a second, echoes what arrives on the
+// USB serial port, and feeds a watchdog armed at boot. A board with no profile, or whose LED the library cannot drive,
+// is refused: the program never drives an LED it does not have.
 
 rp2350.board.Board as Board
 rp2350.board.boardAt as boardAt
@@ -10,12 +11,18 @@ rp2350.timing.Ticker as Ticker
 rp2350.fw.board.BOARD_INDEX as BOARD_INDEX
 rp2350.fw.clock as clock
 rp2350.fw.gpio as gpio
+rp2350.fw.usb as usb
+rp2350.fw.watchdog as watchdog
 rp2350.fw.uart as uart
 rp2350.fw.i2c as i2c
 rp2350.fw.pwm as pwm
 rp2350.fw.adc as adc
+rp2350.fw.eeprom as eeprom
+rp2350.fw.edges as edges
+rp2350.fw.chip as chip
 
 HALF_PERIOD_US: Int64 = 500000
+WATCHDOG_MS: Int32 = 2000
 
 refused: Mutable<Bool> = false
 ledPin: Mutable<Int32> = -1
@@ -23,6 +30,7 @@ lit: Mutable<Bool> = false
 ticker: Mutable<Ticker> { HALF_PERIOD_US }
 
 pub setup: () Void {
+    usb.begin(115200)
     board: Board = boardAt(BOARD_INDEX)
     route: Int32 = ledRoute(board)
     refused = route == LED_NONE
@@ -31,16 +39,18 @@ pub setup: () Void {
         ledPin = route == LED_WIRELESS ? gpio.LED_PIN as Int32 : board.ledPin
         gpio.mode(ledPin, gpio.MODE_OUTPUT)
     }
+    watchdog.arm(WATCHDOG_MS)
 }
 
 pub loop: () Void {
-    if refused {
-        clock.sleepMs(100)
-    } else {
-        if ticker.due(clock.micros()) {
-            lit = !lit
-            gpio.write(ledPin, lit)
-        }
-        clock.sleepMs(1)
+    watchdog.feed()
+    got: Maybe<UInt8> = usb.read()
+    if !got.isNull() {
+        usb.write(got.unwrapOr(0))
     }
+    if !refused && ticker.due(clock.micros()) {
+        lit = !lit
+        gpio.write(ledPin, lit)
+    }
+    clock.sleepMs(1)
 }

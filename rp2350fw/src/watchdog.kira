@@ -1,0 +1,19 @@
+// The hardware watchdog: once armed, the chip resets unless feed is called within the timeout.
+
+@_extern(cpp = "watchdog_enable", header = "hardware/watchdog.h") rawEnable: (delayMs: UInt32, pauseOnDebug: Bool) Void
+@_extern(cpp = "watchdog_update", header = "hardware/watchdog.h") rawUpdate: () Void
+@_extern(cpp = "watchdog_caused_reboot", header = "hardware/watchdog.h") rawCausedReboot: () Bool
+
+// Arms the watchdog with a timeout in milliseconds; it pauses while a debugger halts the chip.
+pub arm: (timeoutMs: Int32) Void {
+    rawEnable(timeoutMs as UInt32, true)
+}
+
+pub feed: () Void {
+    rawUpdate()
+}
+
+// Whether the last reset came from the watchdog.
+pub causedReboot: () Bool {
+    rawCausedReboot()
+}

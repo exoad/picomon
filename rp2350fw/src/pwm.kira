@@ -17,3 +17,31 @@ pub range: (top: Int64) Void {
 pub write: (pin: Int32, duty: Int32) Void {
     rawWrite(pin as UInt8, duty)
 }
+
+// A slice of its own per pin, for a frequency per pin (a 50 Hz servo beside a faster ESC). The order matters: attachSlice
+// first writes the pin once through analogWrite, which gives the pin to PWM (the SDK's gpio_set_function takes an enum
+// Kira cannot pass), then the SDK calls take the slice over. Two pins on one slice share its frequency, and a later
+// analogWrite on that slice resets it, so keep analogWrite off a slice that is set this way.
+
+@_extern(cpp = "pwm_gpio_to_slice_num", header = "hardware/pwm.h") rawSlice: (pin: UInt32) UInt32
+@_extern(cpp = "pwm_gpio_to_channel", header = "hardware/pwm.h") rawChannel: (pin: UInt32) UInt32
+@_extern(cpp = "pwm_set_clkdiv_int_frac4", header = "hardware/pwm.h") rawClkdiv: (slice: UInt32, whole: UInt8, sixteenths: UInt8) Void
+@_extern(cpp = "pwm_set_wrap", header = "hardware/pwm.h") rawWrap: (slice: UInt32, wrap: UInt16) Void
+@_extern(cpp = "pwm_set_chan_level", header = "hardware/pwm.h") rawLevel: (slice: UInt32, chan: UInt32, level: UInt16) Void
+@_extern(cpp = "pwm_set_enabled", header = "hardware/pwm.h") rawEnabled: (slice: UInt32, enabled: Bool) Void
+
+// Gives the pin to PWM and sets its slice to a divider in sixteenths and a wrap (see rp2350.slice.planFor), output low.
+pub attachSlice: (pin: Int32, div16: Int64, wrap: Int64) Void {
+    rawWrite(pin as UInt8, 0)
+    slice: UInt32 = rawSlice(pin as UInt32)
+    rawEnabled(slice, false)
+    rawClkdiv(slice, (div16 / 16) as UInt8, (div16 % 16) as UInt8)
+    rawWrap(slice, wrap as UInt16)
+    rawLevel(slice, rawChannel(pin as UInt32), 0)
+    rawEnabled(slice, true)
+}
+
+// Sets the pin's channel level, 0 to the slice's wrap + 1 (see rp2350.slice.levelForPulse).
+pub setLevel: (pin: Int32, level: Int64) Void {
+    rawLevel(rawSlice(pin as UInt32), rawChannel(pin as UInt32), level as UInt16)
+}

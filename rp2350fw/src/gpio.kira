@@ -4,7 +4,7 @@
 @_extern(cpp = "PinMode", header = "Arduino.h") PinMode: Struct {
 }
 
-@_extern(cpp = "PinStatus", header = "Arduino.h") PinStatus: Struct {
+pub @_extern(cpp = "PinStatus", header = "Arduino.h") PinStatus: Struct {
 }
 
 pub @_extern(cpp = "INPUT", header = "Arduino.h") MODE_INPUT: PinMode

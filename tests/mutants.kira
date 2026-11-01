@@ -41,7 +41,23 @@ MUTANTS: List<Mutant> = @listOf(
     Mutant { "rp2350fw/src/gpio.kira", "pinMode\", header", "pinModes\", header", "drift", "pinMode is renamed in the binding" },
     Mutant { "rp2350fw/src/pwm.kira", "analogWriteRange\", header", "analogWriteRanges\", header", "drift", "analogWriteRange is renamed in the binding" },
     Mutant { "rp2350fw/src/uart.kira", "write: (b: UInt8) Size", "write: (b: UInt8) Int32", "drift", "SerialUART.write is bound as returning Int32" },
-    Mutant { "rp2350fw/src/i2c.kira", "endTransmission: (stop: Bool) UInt8", "endTransmission: (stop: Bool) UInt16", "drift", "TwoWire.endTransmission is bound as 16 bits" }
+    Mutant { "rp2350fw/src/i2c.kira", "endTransmission: (stop: Bool) UInt8", "endTransmission: (stop: Bool) UInt16", "drift", "TwoWire.endTransmission is bound as 16 bits" },
+    Mutant { "rp2350/src/slice.kira", "div16: Int64 = need < DIV16_MIN ? DIV16_MIN : need", "div16: Int64 = need", "host", "a divider below 1.0 is used" },
+    Mutant { "rp2350/src/slice.kira", "(sysHz * 16 + hz * (WRAP_TOP + 1) - 1) / (hz * (WRAP_TOP + 1))", "(sysHz * 16) / (hz * (WRAP_TOP + 1))", "host", "the divider rounds down and the wrap overflows" },
+    Mutant { "rp2350/src/slice.kira", "div16 <= DIV16_MAX &&", "div16 <= DIV16_MAX + 1 &&", "host", "a divider past 255.9375 is accepted" },
+    Mutant { "rp2350/src/slice.kira", "&& wrap >= 1 ?", "&& wrap >= 0 ?", "host", "a wrap of 0 is accepted" },
+    Mutant { "rp2350/src/slice.kira", "if hz <= 0 || sysHz <= 0 {", "if hz < 0 || sysHz <= 0 {", "host", "0 Hz is planned" },
+    Mutant { "rp2350/src/slice.kira", "sysHz * 16 / (div16 * hz) - 1", "sysHz * 16 / (div16 * hz)", "host", "the wrap is one count long" },
+    Mutant { "rp2350/src/slice.kira", "pulseUs >= 0 &&", "pulseUs >= -1 &&", "host", "a negative pulse is accepted" },
+    Mutant { "rp2350/src/slice.kira", "pulseUs * hz <= 1000000", "pulseUs * hz < 1000000", "host", "a pulse of the whole period is refused" },
+    Mutant { "rp2350/src/slice.kira", "pulseUs * (plan.wrap + 1) * hz", "pulseUs * plan.wrap * hz", "host", "the level scales by the wrap, not the period" },
+    Mutant { "rp2350fw/src/usb.kira", "\"dtr\") dtr", "\"dtrs\") dtr", "drift", "SerialUSB.dtr is renamed in the binding" },
+    Mutant { "rp2350fw/src/watchdog.kira", "watchdog_update\", header", "watchdog_updates\", header", "drift", "watchdog_update is renamed in the binding" },
+    Mutant { "rp2350fw/src/eeprom.kira", "\"commit\") commit", "\"commits\") commit", "drift", "EEPROMClass.commit is renamed in the binding" },
+    Mutant { "rp2350fw/src/edges.kira", "\"FALLING\", header", "\"FALLING_EDGE\", header", "drift", "FALLING is renamed in the binding" },
+    Mutant { "rp2350fw/src/chip.kira", "\"getChipID\") chipId", "\"getChipId\") chipId", "drift", "RP2040.getChipID is renamed in the binding" },
+    Mutant { "rp2350fw/src/pwm.kira", "pwm_set_clkdiv_int_frac4\", header", "pwm_set_clkdiv_int_frac5\", header", "drift", "pwm_set_clkdiv_int_frac4 is renamed in the binding" },
+    Mutant { "rp2350fw/src/clock.kira", "rawClockHz: (clock: ClockHandle) UInt32", "rawClockHz: (clock: ClockHandle) UInt64", "drift", "clock_get_hz is bound as 64 bits" }
 )
 
 runProgram: (argv: List<Str>) Int32 {

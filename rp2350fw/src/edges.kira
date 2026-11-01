@@ -1,0 +1,20 @@
+rp2350.fw.gpio.PinStatus as PinStatus
+
+// GPIO interrupts: a Kira function runs when a pin changes. The handler runs in interrupt context, so it must only
+// bump a counter or set a flag, and only one handler can sit on a pin.
+
+pub @_extern(cpp = "RISING", header = "Arduino.h") MODE_RISING: PinStatus
+pub @_extern(cpp = "FALLING", header = "Arduino.h") MODE_FALLING: PinStatus
+pub @_extern(cpp = "CHANGE", header = "Arduino.h") MODE_CHANGE: PinStatus
+
+@_callback @_extern(cpp = "attachInterrupt", header = "Arduino.h") rawAttach: (pin: UInt8, handler: Fx<T0, Void>, mode: PinStatus) Void
+@_extern(cpp = "detachInterrupt", header = "Arduino.h") rawDetach: (pin: UInt8) Void
+
+// Runs handler on each edge of pin that mode names (MODE_RISING, MODE_FALLING or MODE_CHANGE).
+pub attach: (pin: Int32, handler: Fx<T0, Void>, mode: PinStatus) Void {
+    rawAttach(pin as UInt8, handler, mode)
+}
+
+pub detach: (pin: Int32) Void {
+    rawDetach(pin as UInt8)
+}

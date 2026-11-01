@@ -1,0 +1,35 @@
+// Persistent bytes through arduino-pico's EEPROM, which keeps a RAM copy of a flash sector: writes change the copy,
+// commit writes it to flash. Commit rarely; each one erases the sector.
+
+@_opaque @_extern(cpp = "EEPROMClass", header = "EEPROM.h") RawEeprom: Mutable<Any> {
+    pub @_mutates @_extern(cpp = "begin") begin: (size: Size) Void
+    pub @_mutates @_extern(cpp = "read") read: (address: Int32) UInt8
+    pub @_mutates @_extern(cpp = "write") write: (address: Int32, b: UInt8) Void
+    pub @_mutates @_extern(cpp = "commit") commit: () Bool
+    pub @_mutates @_extern(cpp = "end") end: () Bool
+}
+
+@_extern(cpp = "&EEPROM", header = "EEPROM.h") EEPROM: RawEeprom
+
+// Loads size bytes (at most 4096) from flash into the RAM copy.
+pub begin: (size: Int32) Void {
+    EEPROM.begin(size as Size)
+}
+
+pub read: (address: Int32) UInt8 {
+    EEPROM.read(address)
+}
+
+pub write: (address: Int32, b: UInt8) Void {
+    EEPROM.write(address, b)
+}
+
+// Writes the RAM copy to flash; whether it did.
+pub commit: () Bool {
+    EEPROM.commit()
+}
+
+// Commits and frees the RAM copy; whether the commit worked.
+pub end: () Bool {
+    EEPROM.end()
+}

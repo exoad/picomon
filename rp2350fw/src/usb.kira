@@ -1,0 +1,46 @@
+// The USB serial port, the link to the host: arduino-pico's Serial.
+
+@_opaque @_extern(cpp = "SerialUSB", header = "Arduino.h") RawUsb: Mutable<Any> {
+    pub @_mutates @_extern(cpp = "begin") begin: (baud: UInt32) Void
+    pub @_mutates @_extern(cpp = "end") end: () Void
+    pub @_mutates @_extern(cpp = "write") write: (b: UInt8) Size
+    pub @_mutates @_extern(cpp = "read") read: () Int32
+    pub @_mutates @_extern(cpp = "available") available: () Int32
+    pub @_mutates @_extern(cpp = "dtr") dtr: () Bool
+}
+
+@_extern(cpp = "&Serial", header = "Arduino.h") SERIAL: RawUsb
+
+// Starts the port. The baud is ignored by USB but kept for the host side's settings.
+pub begin: (baud: Int64) Void {
+    SERIAL.begin(baud as UInt32)
+}
+
+pub end: () Void {
+    SERIAL.end()
+}
+
+// Whether the host has the port open (it raised DTR).
+pub hostOpen: () Bool {
+    SERIAL.dtr()
+}
+
+pub write: (b: UInt8) Void {
+    SERIAL.write(b)
+}
+
+pub writeAll: (data: List<UInt8>) Void {
+    for i: Size in 0..data.size() {
+        SERIAL.write(data[i])
+    }
+}
+
+pub available: () Int32 {
+    SERIAL.available()
+}
+
+// The next byte, null when nothing is waiting.
+pub read: () Maybe<UInt8> {
+    got: Int32 = SERIAL.read()
+    got < 0 ? null : got as UInt8
+}

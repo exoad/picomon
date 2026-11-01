@@ -10,3 +10,14 @@ pub micros: () Int64 {
 pub sleepMs: (ms: Int32) Void {
     rawSleepMs(ms as UInt32)
 }
+
+@_extern(cpp = "clock_handle_t", header = "hardware/clocks.h") ClockHandle: Struct {
+}
+
+@_extern(cpp = "clk_sys", header = "hardware/clocks.h") CLK_SYS: ClockHandle
+@_extern(cpp = "clock_get_hz", header = "hardware/clocks.h") rawClockHz: (clock: ClockHandle) UInt32
+
+// The system clock in hertz, which PWM slices count.
+pub sysHz: () Int64 {
+    rawClockHz(CLK_SYS) as Int64
+}
