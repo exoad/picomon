@@ -1,0 +1,11 @@
+.venv/
+.pio/
+.cache/
+__pycache__/
+compile_commands.json
+*_kira.py
+*.kira.hxx
+*.kira.cxx
+*.kira.cpp
+kira.gen.manifest
+lib/

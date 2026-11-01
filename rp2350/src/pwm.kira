@@ -1,0 +1,8 @@
+// PWM duty: a percentage turned into the counter level for a wrap value.
+
+pub WRAP_MAX: Int32 = 65535
+
+// The counter level for percent of a wrap, rounded down; null for a percent outside 0 to 100 or a wrap outside 1 to 65535.
+pub levelFor: (percent: Int32, wrap: Int32) Maybe<Int32> {
+    percent >= 0 && percent <= 100 && wrap >= 1 && wrap <= WRAP_MAX ? wrap * percent / 100 : null
+}

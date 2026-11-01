@@ -1,0 +1,8 @@
+// I2C addresses: 7-bit, with the reserved ranges the bus does not use for devices.
+
+pub FIRST_DEVICE_ADDRESS: Int32 = 0x08
+pub LAST_DEVICE_ADDRESS: Int32 = 0x77
+
+pub validAddress: (address: Int32) Bool {
+    address >= FIRST_DEVICE_ADDRESS && address <= LAST_DEVICE_ADDRESS
+}

@@ -1,0 +1,104 @@
+kira.test as test
+rp2350.pin.validPin as validPin
+rp2350.pin.adcInput as adcInput
+rp2350.adc.millivolts as millivolts
+rp2350.adc.ADC_MAX as ADC_MAX
+rp2350.pwm.levelFor as levelFor
+rp2350.i2c.validAddress as validAddress
+rp2350.timing.Ticker as Ticker
+rp2350.board.Board as Board
+rp2350.board.PROFILES as PROFILES
+rp2350.board.profileAt as profileAt
+rp2350.board.boardAt as boardAt
+rp2350.board.ledRoute as ledRoute
+rp2350.board.NO_BOARD as NO_BOARD
+rp2350.board.LED_NONE as LED_NONE
+rp2350.board.LED_GPIO as LED_GPIO
+rp2350.board.LED_WIRELESS as LED_WIRELESS
+
+// rp2350_test: the library's pin, ADC, PWM, I2C, timing and board-profile rules.
+
+pinsAreTheBoardsGpios: (t: Suite) Void {
+    t.check(validPin(0) && validPin(29), "GP0 and GP29 are pins")
+    t.check(!validPin(30) && !validPin(-1), "GP30 and below zero are not")
+    t.check(adcInput(26).unwrapOr(-1) == 0, "GP26 is ADC0")
+    t.check(adcInput(29).unwrapOr(-1) == 3, "GP29 is ADC3")
+    t.check(adcInput(25).isNull(), "GP25 has no ADC input")
+    t.check(adcInput(30).isNull(), "a non-pin has no ADC input")
+}
+
+adcCountsBecomeMillivolts: (t: Suite) Void {
+    t.check(millivolts(0, 3300).unwrapOr(-1) == 0, "zero counts are zero volts")
+    t.check(millivolts(ADC_MAX, 3300).unwrapOr(-1) == 3300, "full scale is the reference")
+    t.check(millivolts(2048, 3300).unwrapOr(-1) == 1650, "half scale rounds down")
+    t.check(millivolts(4096, 3300).isNull(), "a count past 12 bits is refused")
+    t.check(millivolts(-1, 3300).isNull(), "a negative count is refused")
+    t.check(millivolts(100, 0).isNull(), "a reference of zero is refused")
+}
+
+pwmLevelIsAPercentOfTheWrap: (t: Suite) Void {
+    t.check(levelFor(0, 1000).unwrapOr(-1) == 0, "0 percent is level 0")
+    t.check(levelFor(100, 1000).unwrapOr(-1) == 1000, "100 percent is the wrap")
+    t.check(levelFor(50, 999).unwrapOr(-1) == 499, "50 percent rounds down")
+    t.check(levelFor(101, 1000).isNull(), "more than 100 percent is refused")
+    t.check(levelFor(-1, 1000).isNull(), "less than 0 percent is refused")
+    t.check(levelFor(50, 0).isNull(), "a wrap of 0 is refused")
+    t.check(levelFor(50, 65535).unwrapOr(-1) == 32767, "the widest wrap is allowed")
+    t.check(levelFor(50, 65536).isNull(), "a wrap past 16 bits is refused")
+}
+
+deviceAddressesAreTheNonReservedRange: (t: Suite) Void {
+    t.check(!validAddress(0x07), "0x07 is reserved")
+    t.check(validAddress(0x08), "0x08 is the first device address")
+    t.check(validAddress(0x77), "0x77 is the last device address")
+    t.check(!validAddress(0x78), "0x78 is reserved")
+}
+
+aTickerFiresOncePerPeriod: (t: Suite) Void {
+    tick: Ticker { 1000 }
+    t.check(!tick.due(0), "the first call only starts the count")
+    t.check(!tick.due(999), "before the period is not due")
+    t.check(tick.due(1000), "at the period it is due")
+    t.check(!tick.due(1500), "half a period later it is not")
+    t.check(tick.due(2000), "and due again one period on")
+}
+
+theProfilesAreTheBoards: (t: Suite) Void {
+    t.check(PROFILES.size() == 3, "three board profiles")
+    t.checkStr(boardAt(0).name, "pico2", "profile 0 is the Pico 2")
+    t.checkStr(boardAt(1).name, "pico2_w", "profile 1 is the Pico 2 W")
+    t.checkStr(boardAt(2).name, "beetle", "profile 2 is the Beetle")
+    t.check(profileAt(3).isNull(), "an index past the table has no profile")
+    t.check(profileAt(-1).isNull(), "a negative index has no profile")
+    t.check(boardAt(2).flashBytes == 2097152, "the Beetle has 2 MB of flash")
+    t.check(boardAt(0).flashBytes == 4194304, "the Pico 2 has 4 MB of flash")
+}
+
+aBoardsLedIsDrivenTheRightWay: (t: Suite) Void {
+    t.check(ledRoute(boardAt(0)) == LED_GPIO, "the Pico 2 lights GP25")
+    t.check(boardAt(0).ledPin == 25, "the Pico 2 LED is GP25")
+    t.check(ledRoute(boardAt(1)) == LED_WIRELESS, "the Pico 2 W lights its LED through the chip")
+    t.check(boardAt(1).ledPin < 0, "a wireless board has no GPIO LED")
+    t.check(ledRoute(boardAt(2)) == LED_GPIO, "the Beetle lights GP25")
+    t.check(ledRoute(NO_BOARD) == LED_NONE, "a board with no LED is refused")
+    t.check(ledRoute(Board { "gpio0", "x", 0, false, 1 }) == LED_GPIO, "a GPIO 0 LED is a GPIO LED")
+}
+
+anIndexWithNoProfileIsRefused: (t: Suite) Void {
+    t.checkStr(boardAt(7).name, "none", "a missing index gives the none board")
+    t.check(ledRoute(boardAt(7)) == LED_NONE, "and that board is refused")
+    t.checkStr(boardAt(1).name, "pico2_w", "a present index gives its board")
+}
+
+pub main: () Int32 {
+    t: Suite { title = "rp2350_test - the rp2350 library (pins, adc, pwm, i2c, timing, boards)" }
+    pinsAreTheBoardsGpios(t)
+    adcCountsBecomeMillivolts(t)
+    pwmLevelIsAPercentOfTheWrap(t)
+    deviceAddressesAreTheNonReservedRange(t)
+    aTickerFiresOncePerPeriod(t)
+    theProfilesAreTheBoards(t)
+    aBoardsLedIsDrivenTheRightWay(t)
+    anIndexWithNoProfileIsRefused(t)
+    t.finish()
+}

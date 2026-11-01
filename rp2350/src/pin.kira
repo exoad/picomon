@@ -1,0 +1,16 @@
+// The GPIO numbers the Pico 2 brings out, and the pin functions that depend only on the number.
+
+pub GPIO_COUNT: Int32 = 30
+pub LED_PIN: Int32 = 25
+
+// The first GPIO wired to an ADC input: GP26 is ADC0.
+pub ADC_FIRST_PIN: Int32 = 26
+
+pub validPin: (pin: Int32) Bool {
+    pin >= 0 && pin < GPIO_COUNT
+}
+
+// The ADC input (0 to 3) a pin is wired to, null when the pin has no ADC input.
+pub adcInput: (pin: Int32) Maybe<Int32> {
+    validPin(pin) && pin >= ADC_FIRST_PIN ? pin - ADC_FIRST_PIN : null
+}

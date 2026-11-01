@@ -1,0 +1,46 @@
+KIRA: Str = "..\\vendor\\kira\\build\\install\\kira\\bin\\kira.bat"
+KIRA_ROOT: Str = "vendor\\kira\\build\\install\\kira\\bin\\kira.bat"
+PY: Str = ".venv\\Scripts\\python.exe"
+PIO: Str = ".venv\\Scripts\\python.exe -m platformio"
+ENVS: List<Str> = @listOf("pico2", "pico2_w", "beetle")
+
+runProgram: (argv: List<Str>) Int32 {
+    p: Maybe<Process> = spawnProcess(argv)
+    p.isNull() ? 127 : p.value.wait()
+}
+
+runQuiet: (line: Str) Int32 {
+    runProgram(@listOf("cmd", "/c", "${line} > %TEMP%\\rp2350-check-run.txt 2>&1"))
+}
+
+// Runs one step, printing ok or FAILED under its heading.
+step: (title: Str, code: Int32) Bool {
+    println("== ${title}")
+    if code != 0 {
+        println("   FAILED")
+        false
+    } else {
+        println("   ok")
+        true
+    }
+}
+
+pub main: () Int32 {
+    all: List<Str> = args()
+    withMutants: Mutable<Bool> = false
+    for i: Size in 1..all.size() {
+        withMutants = withMutants || all[i] == "--mutants"
+    }
+    ok: Mutable<Bool> = true
+    ok = step("compile library and tests (py)", runQuiet("cd /d tests && ${KIRA} --target py")) && ok
+    ok = step("host tests", runQuiet("${PY} tests\\rp2350_test_kira.py")) && ok
+    ok = step("compile firmware (cpp)", runQuiet("${KIRA_ROOT} --target cpp")) && ok
+    for e: Str in ENVS {
+        ok = step("build firmware ${e}", runQuiet("${PIO} run -e ${e}")) && ok
+    }
+    if withMutants {
+        ok = step("mutation tests", runQuiet("${PY} tests\\mutants_kira.py")) && ok
+    }
+    println(ok ? "all checks passed" : "some checks failed")
+    ok ? 0 : 1
+}

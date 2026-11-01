@@ -1,0 +1,8 @@
+// The rp2350 library's tests: compiled to Python and run on the host.
+PROJECT: Project { } with {
+    name = "rp2350.tests"
+    srcDir = "."
+    target = "py"
+    types = "strict"
+    dependencies = @mapOf("kira_stdlib", "vendor/kira/kira", "rp2350", "rp2350")
+}

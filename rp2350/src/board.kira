@@ -1,0 +1,37 @@
+// The boards the library runs on, as data: one entry per board, chosen by its index in PROFILES.
+
+pub LED_NONE: Int32 = 0
+pub LED_GPIO: Int32 = 1
+pub LED_WIRELESS: Int32 = 2
+
+pub Board: Any {
+    pub name: Str
+    pub pioId: Str
+    // The GPIO of the onboard LED, -1 when the LED is not on a GPIO.
+    pub ledPin: Int32
+    pub wireless: Bool
+    pub flashBytes: Int64
+}
+
+pub PROFILES: List<Board> = @listOf(
+    Board { "pico2", "rpipico2", 25, false, 4194304 },
+    Board { "pico2_w", "rpipico2w", -1, true, 4194304 },
+    Board { "beetle", "rpipico2", 25, false, 2097152 }
+)
+
+// Stands in for an index with no profile: its LED is LED_NONE, so a program refuses it.
+pub NO_BOARD: Board { "none", "", -1, false, 0 }
+
+// The profile at index, null when there is none.
+pub profileAt: (index: Int32) Maybe<Board> {
+    index >= 0 && index < PROFILES.size() as Int32 ? PROFILES[index as Size] : null
+}
+
+pub boardAt: (index: Int32) Board {
+    profileAt(index).unwrapOr(NO_BOARD)
+}
+
+// How the onboard LED is driven: through the wireless chip, on a GPIO, or not at all.
+pub ledRoute: (b: Board) Int32 {
+    b.wireless ? LED_WIRELESS : b.ledPin >= 0 ? LED_GPIO : LED_NONE
+}

@@ -1,0 +1,20 @@
+// A period on the microsecond clock: due answers true once per period, the first call starting the count.
+
+pub Ticker: Mutable<Any> {
+    periodUs: Int64
+    armed: Mutable<Bool> = false
+    nextUs: Mutable<Int64> = 0
+
+    pub due: (nowUs: Int64) Bool {
+        if !armed {
+            armed = true
+            nextUs = nowUs + periodUs
+            false
+        } else if nowUs >= nextUs {
+            nextUs = nowUs + periodUs
+            true
+        } else {
+            false
+        }
+    }
+}

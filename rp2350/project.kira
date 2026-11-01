@@ -1,0 +1,8 @@
+// The rp2350 library: the Kira modules a host tool and the firmware share, imported as rp2350.<module>.
+PROJECT: Project { } with {
+    name = "rp2350"
+    srcDir = "src"
+    target = "py"
+    types = "strict"
+    dependencies = @mapOf("kira_stdlib", "vendor/kira/kira")
+}

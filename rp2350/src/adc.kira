@@ -1,0 +1,11 @@
+// The 12-bit ADC: a reading in counts, and what it means in millivolts against a reference.
+
+pub ADC_MAX: Int32 = 4095
+
+// The internal temperature sensor is input 4, after the four pins.
+pub ADC_TEMP_INPUT: Int32 = 4
+
+// A reading in millivolts for a reference in millivolts, rounded down; null for a count outside 0 to 4095 or a reference not above 0.
+pub millivolts: (raw: Int32, vrefMv: Int32) Maybe<Int32> {
+    raw >= 0 && raw <= ADC_MAX && vrefMv > 0 ? raw * vrefMv / ADC_MAX : null
+}
