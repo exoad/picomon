@@ -1,0 +1,32 @@
+// A PWM slice's settings for one frequency: the clock divider in sixteenths (16 to 4095, so 1.0 to 255.9375) and
+// the wrap (the counter's top, at most 65535). The divider is the smallest that fits, which keeps the wrap, and so
+// the duty resolution, as large as it can be. The slice runs at sysHz / (divider * (wrap + 1)).
+
+pub DIV16_MIN: Int64 = 16
+pub DIV16_MAX: Int64 = 4095
+pub WRAP_TOP: Int64 = 65535
+
+pub SlicePlan: Any {
+    pub div16: Int64
+    pub wrap: Int64
+}
+
+// The plan for hz on a system clock of sysHz; null when hz is out of reach (too slow for the largest divider, too fast
+// for a wrap of at least 1) or not above 0.
+pub planFor: (sysHz: Int64, hz: Int64) Maybe<SlicePlan> {
+    if hz <= 0 || sysHz <= 0 {
+        null
+    } else {
+        // The smallest divider whose counter of 65536 steps still spans one period: ceil(sysHz * 16 / (hz * 65536)).
+        need: Int64 = (sysHz * 16 + hz * (WRAP_TOP + 1) - 1) / (hz * (WRAP_TOP + 1))
+        div16: Int64 = need < DIV16_MIN ? DIV16_MIN : need
+        wrap: Int64 = sysHz * 16 / (div16 * hz) - 1
+        div16 <= DIV16_MAX && wrap >= 1 ? SlicePlan { div16, wrap } : null
+    }
+}
+
+// The channel level that holds the output high for pulseUs of each period at hz; null for a pulse below 0 or longer
+// than the period.
+pub levelForPulse: (plan: SlicePlan, hz: Int64, pulseUs: Int64) Maybe<Int64> {
+    pulseUs >= 0 && pulseUs * hz <= 1000000 ? pulseUs * (plan.wrap + 1) * hz / 1000000 : null
+}

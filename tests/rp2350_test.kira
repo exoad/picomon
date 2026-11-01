@@ -15,8 +15,17 @@ rp2350.board.NO_BOARD as NO_BOARD
 rp2350.board.LED_NONE as LED_NONE
 rp2350.board.LED_GPIO as LED_GPIO
 rp2350.board.LED_WIRELESS as LED_WIRELESS
+rp2350.slice.SlicePlan as SlicePlan
+rp2350.slice.planFor as planFor
+rp2350.slice.levelForPulse as levelForPulse
 
-// rp2350_test: the library's pin, ADC, PWM, I2C, timing and board-profile rules.
+// rp2350_test: the library's pin, ADC, PWM, I2C, timing, board-profile and PWM-slice rules.
+
+SYS_HZ: Int64 = 150000000
+
+planOf: (sysHz: Int64, hz: Int64) SlicePlan {
+    planFor(sysHz, hz).unwrapOr(SlicePlan { 0, 0 })
+}
 
 pinsAreTheBoardsGpios: (t: Suite) Void {
     t.check(validPin(0) && validPin(29), "GP0 and GP29 are pins")
@@ -90,8 +99,39 @@ anIndexWithNoProfileIsRefused: (t: Suite) Void {
     t.checkStr(boardAt(1).name, "pico2_w", "a present index gives its board")
 }
 
+aServoSliceRunsAt50Hz: (t: Suite) Void {
+    p: SlicePlan = planOf(SYS_HZ, 50)
+    t.check(p.div16 == 733, "50 Hz takes the smallest divider that fits, 733 sixteenths")
+    t.check(p.wrap == 65483, "and a wrap just under the 16-bit top")
+    t.check(SYS_HZ * 16 / (p.div16 * (p.wrap + 1)) == 50, "which runs at 50 Hz")
+    t.check(levelForPulse(p, 50, 1000).unwrapOr(-1) == 3274, "a 1000 us pulse")
+    t.check(levelForPulse(p, 50, 1500).unwrapOr(-1) == 4911, "a 1500 us pulse")
+    t.check(levelForPulse(p, 50, 2000).unwrapOr(-1) == 6548, "a 2000 us pulse")
+    t.check(levelForPulse(p, 50, 20000).unwrapOr(-1) == 65484, "a pulse of the whole period is always on")
+    t.check(levelForPulse(p, 50, 20001).isNull(), "a pulse longer than the period is refused")
+    t.check(levelForPulse(p, 50, -1).isNull(), "a negative pulse is refused")
+}
+
+aFastSliceKeepsTheSmallestDivider: (t: Suite) Void {
+    p: SlicePlan = planOf(SYS_HZ, 10000)
+    t.check(p.div16 == 16, "10 kHz needs no division, a divider of 1")
+    t.check(p.wrap == 14999, "and wraps at 14999")
+    t.check(!planFor(SYS_HZ, 75000000).isNull(), "half the clock is the fastest, a wrap of 1")
+    t.check(planFor(SYS_HZ, 75000001).isNull(), "faster than that is refused")
+}
+
+aSlowSliceStopsAtTheLargestDivider: (t: Suite) Void {
+    t.check(planOf(16773120, 1).div16 == 4095, "the largest divider still fits")
+    t.check(planFor(16777216, 1).isNull(), "one sixteenth past it is refused")
+    t.check(planFor(SYS_HZ, 8).isNull(), "8 Hz is too slow for a 150 MHz clock")
+    t.check(planFor(SYS_HZ, 0).isNull(), "0 Hz is refused")
+}
+
 pub main: () Int32 {
-    t: Suite { title = "rp2350_test - the rp2350 library (pins, adc, pwm, i2c, timing, boards)" }
+    t: Suite { title = "rp2350_test - the rp2350 library (pins, adc, pwm, i2c, timing, boards, slices)" }
+    aServoSliceRunsAt50Hz(t)
+    aFastSliceKeepsTheSmallestDivider(t)
+    aSlowSliceStopsAtTheLargestDivider(t)
     pinsAreTheBoardsGpios(t)
     adcCountsBecomeMillivolts(t)
     pwmLevelIsAPercentOfTheWrap(t)
