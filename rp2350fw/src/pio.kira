@@ -1,0 +1,60 @@
+// PIO: load a program into a PIO block's instruction memory and run it on a state machine. A program is a module-level
+// constant Arr<UInt16, N> of encoded instructions (pioasm output) in a PioProgram; Kira passes both to the SDK by
+// pointer for the one call. The usual order: addProgram, claimUnusedSm, defaultSmConfig and its set* methods,
+// gpioInit for each pin, setConsecutivePindirs, smInit, smSetEnabled.
+
+pub @_opaque @_extern(c = "pio_hw_t", header = "hardware/pio.h") Pio: Mutable<Any> {
+}
+
+pub @_extern(c = "pio0", header = "hardware/pio.h") PIO0: Pio
+pub @_extern(c = "pio1", header = "hardware/pio.h") PIO1: Pio
+pub @_extern(c = "pio2", header = "hardware/pio.h") PIO2: Pio
+
+// pio_version and used_gpio_ranges are left out (Kira names cannot hold their underscores); they start at zero,
+// which means any PIO version.
+pub @_extern(c = "pio_program_t", header = "hardware/pio.h") PioProgram: Struct {
+    pub instructions: Unsafe<UInt16>
+    pub length: UInt8
+    // The load offset it needs, -1 when it can load anywhere.
+    pub origin: Int8
+}
+
+pub @_extern(c = "pio_fifo_join", header = "hardware/pio.h") FifoJoin: Struct {
+}
+
+pub @_extern(c = "PIO_FIFO_JOIN_NONE", header = "hardware/pio.h") FIFO_JOIN_NONE: FifoJoin
+pub @_extern(c = "PIO_FIFO_JOIN_TX", header = "hardware/pio.h") FIFO_JOIN_TX: FifoJoin
+pub @_extern(c = "PIO_FIFO_JOIN_RX", header = "hardware/pio.h") FIFO_JOIN_RX: FifoJoin
+
+// A state machine's configuration, changed in place by its set* methods before smInit.
+pub @_extern(c = "pio_sm_config", header = "hardware/pio.h") SmConfig: Struct {
+    pub @_mutates @_extern(c = "sm_config_set_wrap") setWrap: (target: UInt32, wrap: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_in_pins") setInPins: (base: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_out_pins") setOutPins: (base: UInt32, count: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_set_pins") setSetPins: (base: UInt32, count: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_sideset_pins") setSidesetPins: (base: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_jmp_pin") setJmpPin: (pin: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_clkdiv") setClkdiv: (div: Float32) Void
+    pub @_mutates @_extern(c = "sm_config_set_in_shift") setInShift: (shiftRight: Bool, autopush: Bool, threshold: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_out_shift") setOutShift: (shiftRight: Bool, autopull: Bool, threshold: UInt32) Void
+    pub @_mutates @_extern(c = "sm_config_set_fifo_join") setFifoJoin: (join: FifoJoin) Void
+}
+
+pub @_extern(c = "pio_can_add_program", header = "hardware/pio.h") canAddProgram: (pio: Pio, program: Unsafe<PioProgram>) Bool
+// The offset the program loaded at, or a negative error.
+pub @_extern(c = "pio_add_program", header = "hardware/pio.h") addProgram: (pio: Pio, program: Unsafe<PioProgram>) Int32
+pub @_extern(c = "pio_remove_program", header = "hardware/pio.h") removeProgram: (pio: Pio, program: Unsafe<PioProgram>, offset: UInt32) Void
+// A free state machine, or a negative error when none is free and required is false.
+pub @_extern(c = "pio_claim_unused_sm", header = "hardware/pio.h") claimUnusedSm: (pio: Pio, required: Bool) Int32
+pub @_extern(c = "pio_sm_unclaim", header = "hardware/pio.h") smUnclaim: (pio: Pio, sm: UInt32) Void
+pub @_extern(c = "pio_get_default_sm_config", header = "hardware/pio.h") defaultSmConfig: () SmConfig
+pub @_extern(c = "pio_sm_init", header = "hardware/pio.h") smInit: (pio: Pio, sm: UInt32, initialPc: UInt32, config: Unsafe<SmConfig>) Int32
+pub @_extern(c = "pio_sm_set_enabled", header = "hardware/pio.h") smSetEnabled: (pio: Pio, sm: UInt32, enabled: Bool) Void
+pub @_extern(c = "pio_sm_put_blocking", header = "hardware/pio.h") smPutBlocking: (pio: Pio, sm: UInt32, data: UInt32) Void
+pub @_extern(c = "pio_sm_get_blocking", header = "hardware/pio.h") smGetBlocking: (pio: Pio, sm: UInt32) UInt32
+// The next word from the RX FIFO, without waiting: check smIsRxFifoEmpty first.
+pub @_extern(c = "pio_sm_get", header = "hardware/pio.h") smGet: (pio: Pio, sm: UInt32) UInt32
+pub @_extern(c = "pio_sm_is_rx_fifo_empty", header = "hardware/pio.h") smIsRxFifoEmpty: (pio: Pio, sm: UInt32) Bool
+// Gives the pin to this PIO block.
+pub @_extern(c = "pio_gpio_init", header = "hardware/pio.h") gpioInit: (pio: Pio, pin: UInt32) Void
+pub @_extern(c = "pio_sm_set_consecutive_pindirs", header = "hardware/pio.h") setConsecutivePindirs: (pio: Pio, sm: UInt32, base: UInt32, count: UInt32, isOut: Bool) Int32

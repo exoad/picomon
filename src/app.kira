@@ -21,6 +21,14 @@ rp2350.fw.eeprom as eeprom
 rp2350.fw.edges as edges
 rp2350.fw.chip as chip
 rp2350.fw.servo.Servo as Servo
+rp2350.fw.pio as pio
+rp2350.fw.pio.PioProgram as PioProgram
+rp2350.fw.pio.SmConfig as SmConfig
+
+// A one-instruction PIO program: jmp to itself. The selftest loads it and inits a state machine on it, but never
+// enables the machine or gives it a pin.
+JMP_SELF: Arr<UInt16, 1> = @arrOf(0x0000)
+IDLE_PROGRAM: PioProgram { instructions = JMP_SELF, length = 1, origin = -1 }
 
 HALF_PERIOD_US: Int64 = 500000
 WATCHDOG_MS: Int32 = 2000
@@ -32,6 +40,26 @@ ticker: Mutable<Ticker> { HALF_PERIOD_US }
 // Built but never attached: it drives no pin until a program picks one.
 idleServo: Mutable<Servo> { }
 
+// Loads IDLE_PROGRAM, inits a free state machine on it with the default config, then frees both; whether each step
+// worked. No state machine is enabled and no pin changes.
+pioSelftest: () Bool {
+    ok: Mutable<Bool> = false
+    if pio.canAddProgram(pio.PIO0, IDLE_PROGRAM) {
+        offset: Int32 = pio.addProgram(pio.PIO0, IDLE_PROGRAM)
+        sm: Int32 = pio.claimUnusedSm(pio.PIO0, false)
+        if offset >= 0 && sm >= 0 {
+            config: Mutable<SmConfig> = pio.defaultSmConfig()
+            config.setWrap(offset as UInt32, offset as UInt32)
+            ok = pio.smInit(pio.PIO0, sm as UInt32, offset as UInt32, config) == 0
+            pio.smUnclaim(pio.PIO0, sm as UInt32)
+        }
+        if offset >= 0 {
+            pio.removeProgram(pio.PIO0, IDLE_PROGRAM, offset as UInt32)
+        }
+    }
+    ok
+}
+
 pub setup: () Void {
     usb.begin(115200)
     board: Board = boardAt(BOARD_INDEX)
@@ -42,6 +70,7 @@ pub setup: () Void {
         ledPin = route == LED_WIRELESS ? gpio.LED_PIN as Int32 : board.ledPin
         gpio.mode(ledPin, gpio.MODE_OUTPUT)
     }
+    pioSelftest()
     watchdog.arm(WATCHDOG_MS)
 }
 

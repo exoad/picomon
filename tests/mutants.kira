@@ -62,7 +62,14 @@ MUTANTS: List<Mutant> = @listOf(
     Mutant { "rp2350fw/src/servo.kira", "attach: (pin: UInt8) Int32", "attach: (pin: UInt8) Bool", "drift", "Servo.attach is bound as returning Bool" },
     Mutant { "rp2350fw/src/servo.kira", "attachRange: (pin: UInt8, minUs: Int32, maxUs: Int32) Int32", "attachRange: (pin: UInt8, minUs: Int32) Int32", "drift", "an attach overload the header lacks is bound" },
     Mutant { "rp2350fw/src/servo.kira", "readMicroseconds: () Int32", "readMicroseconds: () Int64", "drift", "Servo.readMicroseconds is bound as 64 bits" },
-    Mutant { "rp2350fw/src/servo.kira", "attached: () Bool", "attached: () Int32", "drift", "Servo.attached is bound as Int32" }
+    Mutant { "rp2350fw/src/servo.kira", "attached: () Bool", "attached: () Int32", "drift", "Servo.attached is bound as Int32" },
+    Mutant { "rp2350fw/src/pio.kira", "smGet: (pio: Pio, sm: UInt32) UInt32", "smGet: (pio: Pio, sm: UInt32) Int32", "drift", "pio_sm_get is bound as signed" },
+    Mutant { "rp2350fw/src/pio.kira", "smIsRxFifoEmpty: (pio: Pio, sm: UInt32) Bool", "smIsRxFifoEmpty: (pio: Pio, sm: UInt32) Int32", "drift", "pio_sm_is_rx_fifo_empty is bound as Int32" },
+    Mutant { "rp2350fw/src/pio.kira", "pio_sm_set_enabled\", header", "pio_sm_enable\", header", "drift", "pio_sm_set_enabled is renamed in the binding" },
+    Mutant { "rp2350fw/src/pio.kira", "setClkdiv: (div: Float32) Void", "setClkdiv: (div: Float64) Void", "drift", "sm_config_set_clkdiv takes a double in the binding" },
+    Mutant { "rp2350fw/src/pio.kira", "\"sm_config_set_out_pins\") setOutPins", "\"sm_config_set_outpins\") setOutPins", "drift", "sm_config_set_out_pins is renamed in the binding" },
+    Mutant { "rp2350fw/src/pio.kira", "pub length: UInt8", "pub length: UInt16", "drift", "pio_program_t.length is bound as 16 bits" },
+    Mutant { "rp2350fw/src/pio.kira", "\"PIO_FIFO_JOIN_RX\", header", "\"PIO_FIFO_JOIN_RXX\", header", "drift", "PIO_FIFO_JOIN_RX is renamed in the binding" }
 )
 
 runProgram: (argv: List<Str>) Int32 {
