@@ -69,6 +69,8 @@ MUTANTS: List<Mutant> = @listOf(
     Mutant { "rp2350fw/src/pio.kira", "setClkdiv: (div: Float32) Void", "setClkdiv: (div: Float64) Void", "drift", "sm_config_set_clkdiv takes a double in the binding" },
     Mutant { "rp2350fw/src/pio.kira", "\"sm_config_set_out_pins\") setOutPins", "\"sm_config_set_outpins\") setOutPins", "drift", "sm_config_set_out_pins is renamed in the binding" },
     Mutant { "rp2350fw/src/pio.kira", "pub length: UInt8", "pub length: UInt16", "drift", "pio_program_t.length is bound as 16 bits" },
+    Mutant { "rp2350fw/src/pio.kira", "c = \"pio_version\"", "c = \"pio_versions\"", "drift", "pio_program_t.pio_version is renamed in the binding" },
+    Mutant { "rp2350fw/src/pio.kira", "usedGpioRanges: UInt8", "usedGpioRanges: Int8", "drift", "pio_program_t.used_gpio_ranges is bound as signed" },
     Mutant { "rp2350fw/src/pio.kira", "\"PIO_FIFO_JOIN_RX\", header", "\"PIO_FIFO_JOIN_RXX\", header", "drift", "PIO_FIFO_JOIN_RX is renamed in the binding" }
 )
 

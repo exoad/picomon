@@ -10,13 +10,16 @@ pub @_extern(c = "pio0", header = "hardware/pio.h") PIO0: Pio
 pub @_extern(c = "pio1", header = "hardware/pio.h") PIO1: Pio
 pub @_extern(c = "pio2", header = "hardware/pio.h") PIO2: Pio
 
-// pio_version and used_gpio_ranges are left out (Kira names cannot hold their underscores); they start at zero,
-// which means any PIO version.
 pub @_extern(c = "pio_program_t", header = "hardware/pio.h") PioProgram: Struct {
     pub instructions: Unsafe<UInt16>
     pub length: UInt8
     // The load offset it needs, -1 when it can load anywhere.
     pub origin: Int8
+    // The oldest PIO version it runs on: 0 runs anywhere, 1 needs the RP2350's PIO.
+    pub @_extern(c = "pio_version") pioVersion: UInt8 = 0
+    // Which 16-pin GPIO banks it touches (bit 0 is GP0 to GP15, bit 1 GP16 to GP31, bit 2 GP32 to GP47), checked
+    // against the block's GPIO base; 0 skips the check.
+    pub @_extern(c = "used_gpio_ranges") usedGpioRanges: UInt8 = 0
 }
 
 pub @_extern(c = "pio_fifo_join", header = "hardware/pio.h") FifoJoin: Struct {
