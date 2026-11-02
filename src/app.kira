@@ -20,6 +20,7 @@ rp2350.fw.adc as adc
 rp2350.fw.eeprom as eeprom
 rp2350.fw.edges as edges
 rp2350.fw.chip as chip
+rp2350.fw.servo.Servo as Servo
 
 HALF_PERIOD_US: Int64 = 500000
 WATCHDOG_MS: Int32 = 2000
@@ -28,6 +29,8 @@ refused: Mutable<Bool> = false
 ledPin: Mutable<Int32> = -1
 lit: Mutable<Bool> = false
 ticker: Mutable<Ticker> { HALF_PERIOD_US }
+// Built but never attached: it drives no pin until a program picks one.
+idleServo: Mutable<Servo> { }
 
 pub setup: () Void {
     usb.begin(115200)

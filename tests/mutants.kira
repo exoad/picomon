@@ -57,7 +57,12 @@ MUTANTS: List<Mutant> = @listOf(
     Mutant { "rp2350fw/src/edges.kira", "\"FALLING\", header", "\"FALLING_EDGE\", header", "drift", "FALLING is renamed in the binding" },
     Mutant { "rp2350fw/src/chip.kira", "\"getChipID\") chipId", "\"getChipId\") chipId", "drift", "RP2040.getChipID is renamed in the binding" },
     Mutant { "rp2350fw/src/pwm.kira", "pwm_set_clkdiv_int_frac4\", header", "pwm_set_clkdiv_int_frac5\", header", "drift", "pwm_set_clkdiv_int_frac4 is renamed in the binding" },
-    Mutant { "rp2350fw/src/clock.kira", "rawClockHz: (clock: ClockHandle) UInt32", "rawClockHz: (clock: ClockHandle) UInt64", "drift", "clock_get_hz is bound as 64 bits" }
+    Mutant { "rp2350fw/src/clock.kira", "rawClockHz: (clock: ClockHandle) UInt32", "rawClockHz: (clock: ClockHandle) UInt64", "drift", "clock_get_hz is bound as 64 bits" },
+    Mutant { "rp2350fw/src/servo.kira", "\"writeMicroseconds\") writeMicroseconds", "\"writeMicros\") writeMicroseconds", "drift", "Servo.writeMicroseconds is renamed in the binding" },
+    Mutant { "rp2350fw/src/servo.kira", "attach: (pin: UInt8) Int32", "attach: (pin: UInt8) Bool", "drift", "Servo.attach is bound as returning Bool" },
+    Mutant { "rp2350fw/src/servo.kira", "attachRange: (pin: UInt8, minUs: Int32, maxUs: Int32) Int32", "attachRange: (pin: UInt8, minUs: Int32) Int32", "drift", "an attach overload the header lacks is bound" },
+    Mutant { "rp2350fw/src/servo.kira", "readMicroseconds: () Int32", "readMicroseconds: () Int64", "drift", "Servo.readMicroseconds is bound as 64 bits" },
+    Mutant { "rp2350fw/src/servo.kira", "attached: () Bool", "attached: () Int32", "drift", "Servo.attached is bound as Int32" }
 )
 
 runProgram: (argv: List<Str>) Int32 {

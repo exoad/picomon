@@ -1,0 +1,20 @@
+// Servo pulses through arduino-pico's Servo, which drives each one from a PIO state machine. Make one where it lives
+// (`s: Mutable<Servo> { }`, or at module level) and call its methods on it; it is never copied or passed around.
+// Every method here is non-const in Servo.h, so each is @_mutates.
+
+pub @_constructible @_extern(cpp = "Servo", header = "Servo.h") Servo: Struct {
+    // Each attach returns the channel it took, 0 when none was free.
+    pub @_mutates @_extern(cpp = "attach") attach: (pin: UInt8) Int32
+    // minUs and maxUs are the pulses write maps 0 and 180 degrees to.
+    pub @_mutates @_extern(cpp = "attach") attachRange: (pin: UInt8, minUs: Int32, maxUs: Int32) Int32
+    // As attachRange, then write(value).
+    pub @_mutates @_extern(cpp = "attach") attachAt: (pin: UInt8, minUs: Int32, maxUs: Int32, value: Int32) Int32
+    pub @_mutates @_extern(cpp = "detach") detach: () Void
+    // A value below 200 is an angle in degrees, otherwise a pulse in microseconds.
+    pub @_mutates @_extern(cpp = "write") write: (value: Int32) Void
+    pub @_mutates @_extern(cpp = "writeMicroseconds") writeMicroseconds: (us: Int32) Void
+    // The current pulse as an angle, 0 to 180.
+    pub @_mutates @_extern(cpp = "read") read: () Int32
+    pub @_mutates @_extern(cpp = "readMicroseconds") readMicroseconds: () Int32
+    pub @_mutates @_extern(cpp = "attached") attached: () Bool
+}
